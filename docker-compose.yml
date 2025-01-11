@@ -1,0 +1,16 @@
+services:
+  db_managementfiles:
+    build:
+      context: ./Database
+      dockerfile: Dockerfile
+    container_name: db_managementfiles
+    environment:
+      MYSQL_ROOT_PASSWORD: 10710*
+      MYSQL_DATABASE: managementfiles
+    ports: 
+      - "3308:3306"
+    volumes:
+      - managementfiles_data:/var/lib/mysql
+  
+volumes:
+  managementfiles_data:
