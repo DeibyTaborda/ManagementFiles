@@ -57,38 +57,74 @@ class FilesUpload {
         return $uploadedFiles;
     }
 
-    function getFiles($directoryPath) {
+    function getFiles($module, $id, $folder = "") {
         $errors = [];
-
-        // Verificamos que la ruta exista
-        if (!is_dir($directoryPath)) {
-            return $errors[] = 'El directorio no existe';
+        $files = [];
+    
+        // Verificamos que el directorio principal exista
+        if (!is_dir($module)) {
+            $errors[] = 'El directorio principal no existe';
+            return $errors;
         }
-
-        // Obtenemos todos los archivos de la ruta específicada
-        $scanned = scandir($directoryPath);
-
-        foreach($scanned as $item) {
+    
+        // Construimos la ruta con el parámetro folder si es proporcionado
+        $path = rtrim($module, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+    
+        if (!empty($folder)) {
+            $path .= $folder . DIRECTORY_SEPARATOR;
+        }
+    
+        $path .= $id;
+    
+        // Verificamos que la ruta construida exista
+        if (!is_dir($path)) {
+            $errors[] = 'El subdirectorio no existe';
+            return $errors;
+        }
+    
+        // Obtener los archivos del subdirectorio
+        $scanned = scandir($path);
+        if ($scanned === false) {
+            $errors[] = 'No se pudieron leer los archivos del directorio';
+            return $errors;
+        }
+    
+        // Recorremos los archivos encontrados
+        foreach ($scanned as $item) {
             // Ignorar '.' y '..'
             if ($item == '.' || $item == '..') {
                 continue;
             }
-
-            $path = $directoryPath . '/' . $item;
-
-            $files[] = $path;
+    
+            // Agregar el archivo a la lista de archivos
+            $files[] = $path . DIRECTORY_SEPARATOR . $item;
         }
-
+    
         return $files;
-    }
+    }        
 
-    function getFile($path) {
-        if (file_exists($path)) {
-            $fileContents = $path;
-        } else {
-            $fileContents = 'El archivo no existe';
+
+    function getFile($module, $id, $file = "") {
+        // Construimos la ruta de manera similar al método anterior
+        $path = rtrim($module, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+    
+        // Si hay una carpeta intermedia, la añadimos
+        if (!empty($file)) {
+            $path .= $file . DIRECTORY_SEPARATOR;
         }
-
+    
+        // Añadimos el id al final de la ruta
+        $path .= $id;
+    
+        // Verifica si el archivo existe
+        if (file_exists($path)) {
+            // Obtiene el contenido del archivo
+            $fileContents = file_get_contents($path);
+        } else {
+            // Si el archivo no existe, retorna un mensaje de error más informativo
+            $fileContents = "El archivo '$path' no existe";
+        }
+    
         return $fileContents;
     }
-}
+}    
